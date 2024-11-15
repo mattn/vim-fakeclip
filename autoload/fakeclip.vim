@@ -25,7 +25,7 @@
 
 if has('macunix') || system('uname') =~? '^darwin'
   let s:PLATFORM = 'mac'
-elseif system('cat /proc/sys/kernel/osrelease') =~? 'Microsoft'
+elseif filereadable('/proc/sys/kernel/osrelease') && get(readfile('/proc/sys/kernel/osrelease'), 0, '') =~? 'Microsoft'
   let s:PLATFORM = 'wsl'
 elseif has('win32unix')
   let s:PLATFORM = 'cygwin'
@@ -159,6 +159,9 @@ endfunction
 
 " Core  "{{{1
 function! s:read_clipboard()  "{{{2
+  if get(g:, 'fakeclip_read_clipboard_command', '') != ''
+    return system(g:fakeclip_read_clipboard_command)
+  endif
   return s:read_clipboard_{s:PLATFORM}()
 endfunction
 
@@ -254,6 +257,9 @@ endfunction
 
 
 function! s:write_clipboard(text)  "{{{2
+  if get(g:, 'fakeclip_write_clipboard_command', '') != ''
+    return system(g:fakeclip_write_clipboard_command, a:text)
+  endif
   call s:write_clipboard_{s:PLATFORM}(a:text)
   return
 endfunction
